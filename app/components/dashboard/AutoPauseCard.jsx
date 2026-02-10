@@ -6,7 +6,8 @@ export default function AutoPauseCard({
   duration,
   onDurationChange,
   frequency,
-  onFrequencyChange
+  onFrequencyChange,
+  onPreset
 }) {
   return (
     <div id="auto-pause-card" className="glass-card rounded-2xl p-5 sm:p-6">
@@ -56,15 +57,27 @@ export default function AutoPauseCard({
         <div className="pt-4 border-t border-white/10">
           <label className="text-sm text-gray-300 mb-3 block">Presets</label>
           <div className="grid grid-cols-3 gap-2">
-            <button type="button" className="px-3 py-3 rounded-lg bg-gradient-to-br from-orange-600 to-red-600 text-white text-sm font-medium hover:shadow-lg transition">
+            <button
+              type="button"
+              className="px-3 py-3 rounded-lg bg-gradient-to-br from-orange-600 to-red-600 text-white text-sm font-medium hover:shadow-lg transition"
+              onClick={() => onPreset?.(1.5, 1)}
+            >
               <Icon name="book" className="mb-1 block" />
               Audiobook
             </button>
-            <button type="button" className="px-3 py-3 rounded-lg bg-gradient-to-br from-green-600 to-teal-600 text-white text-sm font-medium hover:shadow-lg transition">
+            <button
+              type="button"
+              className="px-3 py-3 rounded-lg bg-gradient-to-br from-green-600 to-teal-600 text-white text-sm font-medium hover:shadow-lg transition"
+              onClick={() => onPreset?.(10, 1)}
+            >
               <Icon name="spa" className="mb-1 block" />
               Meditation
             </button>
-            <button type="button" className="px-3 py-3 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white text-sm font-medium hover:shadow-lg transition">
+            <button
+              type="button"
+              className="px-3 py-3 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white text-sm font-medium hover:shadow-lg transition"
+              onClick={() => onPreset?.(2.5, 10)}
+            >
               <Icon name="podcast" className="mb-1 block" />
               Podcast
             </button>

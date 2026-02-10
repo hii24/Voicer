@@ -164,6 +164,12 @@ export default function Dashboard({ user }) {
     }
   };
 
+  const handlePreset = (nextDuration, nextFrequency) => {
+    setAutoPauseEnabled(true);
+    setDuration(nextDuration);
+    setFrequency(nextFrequency);
+  };
+
   const applyTaskSettings = (item) => {
     if (!item) return;
     if (item.fullText) {
@@ -543,6 +549,7 @@ export default function Dashboard({ user }) {
             onDurationChange={setDuration}
             frequency={frequency}
             onFrequencyChange={setFrequency}
+            onPreset={handlePreset}
           />
         </div>
       </div>
