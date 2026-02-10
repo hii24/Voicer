@@ -15,6 +15,13 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [defaultTokens, setDefaultTokens] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      router.replace("/dashboard");
+    }
+  }, [user, router]);
 
   useEffect(() => {
     if (authError) {
@@ -23,10 +30,21 @@ export default function RegisterPage() {
   }, [authError]);
 
   useEffect(() => {
-    if (user) {
-      router.replace("/dashboard");
-    }
-  }, [user, router]);
+    const loadConfig = async () => {
+      try {
+        const res = await fetch("/api/config");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (typeof data.defaultTokens === "number") {
+          setDefaultTokens(data.defaultTokens);
+        }
+      } catch {
+        return;
+      }
+    };
+
+    loadConfig();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -39,7 +57,9 @@ export default function RegisterPage() {
         email: result.user.email,
         createdAt: serverTimestamp(),
         role: "user",
-        canGenerate: false
+        canGenerate: false,
+        tokenBalance: defaultTokens,
+        tokenUsed: 0
       });
       router.replace("/dashboard");
     } catch (err) {
@@ -79,7 +99,6 @@ export default function RegisterPage() {
             />
           </div>
           {error ? <div className="text-sm text-red-300">{error}</div> : null}
-          {authError ? <div className="text-sm text-red-300">{authError.message}</div> : null}
           <button
             type="submit"
             className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold"

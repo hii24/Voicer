@@ -35,31 +35,13 @@ export async function GET(req) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const list = await adminAuth.listUsers(1000);
-    const refs = list.users.map((user) => adminDb.collection("users").doc(user.uid));
-    const docs = refs.length ? await adminDb.getAll(...refs) : [];
-    const map = new Map();
-    docs.forEach((doc) => {
-      map.set(doc.id, doc.exists ? doc.data() : {});
-    });
+    const snap = await adminDb.collection("config").doc("system").get();
+    const data = snap.exists ? snap.data() : {};
 
-    const users = list.users.map((user) => {
-      const data = map.get(user.uid) || {};
-      const canGenerate = data.canGenerate !== false;
-      return {
-        uid: user.uid,
-        email: user.email || "",
-        displayName: user.displayName || "",
-        disabled: Boolean(user.disabled),
-        createdAt: user.metadata?.creationTime || "",
-        role: data.role || "user",
-        canGenerate,
-        tokenBalance: typeof data.tokenBalance === "number" ? data.tokenBalance : 0,
-        tokenUsed: typeof data.tokenUsed === "number" ? data.tokenUsed : 0
-      };
+    return NextResponse.json({
+      defaultTokens: typeof data.defaultTokens === "number" ? data.defaultTokens : 0,
+      maxTextLength: typeof data.maxTextLength === "number" ? data.maxTextLength : 1000000
     });
-
-    return NextResponse.json({ users });
   } catch (err) {
     return NextResponse.json({ error: err?.message || "Server error" }, { status: 500 });
   }
@@ -82,42 +64,17 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const uid = body?.uid;
-    const canGenerate = body?.canGenerate;
-    const tokenAction = body?.tokenAction;
-    const amountRaw = body?.amount;
+    const updates = {};
 
-    if (!uid) {
-      return NextResponse.json({ error: "Missing uid" }, { status: 400 });
+    if (typeof body.defaultTokens === "number" && body.defaultTokens >= 0) {
+      updates.defaultTokens = Math.floor(body.defaultTokens);
     }
+    if (typeof body.maxTextLength === "number" && body.maxTextLength >= 1) {
+      updates.maxTextLength = Math.floor(body.maxTextLength);
+    }
+    updates.updatedAt = new Date();
 
-    const userRef = adminDb.collection("users").doc(uid);
-
-    await adminDb.runTransaction(async (tx) => {
-      const snap = await tx.get(userRef);
-      const data = snap.exists ? snap.data() : {};
-      const updates = { updatedAt: new Date() };
-
-      if (typeof canGenerate === "boolean") {
-        updates.canGenerate = canGenerate;
-      }
-
-      if (tokenAction) {
-        const amount = Number.isFinite(Number(amountRaw)) ? Math.max(0, Math.floor(Number(amountRaw))) : 0;
-        let balance = typeof data.tokenBalance === "number" ? data.tokenBalance : 0;
-        if (tokenAction === "add") {
-          balance += amount;
-        } else if (tokenAction === "remove") {
-          balance = Math.max(0, balance - amount);
-        } else if (tokenAction === "set") {
-          balance = Math.max(0, amount);
-        }
-        updates.tokenBalance = balance;
-      }
-
-      tx.set(userRef, updates, { merge: true });
-    });
-
+    await adminDb.collection("config").doc("system").set(updates, { merge: true });
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json({ error: err?.message || "Server error" }, { status: 500 });

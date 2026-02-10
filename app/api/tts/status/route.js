@@ -28,7 +28,7 @@ export async function GET(req) {
 
     const task = taskSnap.data();
     if (task.status === "completed") {
-      return NextResponse.json({ status: "completed", progress: 100, downloadUrl: task.downloadUrl || "" });
+      return NextResponse.json({ status: "completed", progress: 100 });
     }
     if (task.status === "failed") {
       return NextResponse.json({ status: "failed", progress: task.progress || 0, error: task.error || "Failed" });
@@ -40,10 +40,10 @@ export async function GET(req) {
     }
 
     const apiKey = process.env.VOICER_API_KEY;
-    const apiBase =
-      process.env.VOICER_API_BASE_URL || "https://elevenlabs-unlimited.net/api/v1";
+    const apiBase = process.env.VOICER_API_BASE_URL || "https://elevenlabs-unlimited.net/api/v1";
     if (!apiKey) {
       await taskRef.update({ status: "failed", error: "Missing VOICER_API_KEY" });
+      await refundTokens(userId, taskRef);
       return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
     }
 
@@ -68,6 +68,7 @@ export async function GET(req) {
 
     if (status === "failed") {
       await taskRef.update({ status: "failed", error: data.error || "Failed", progress });
+      await refundTokens(userId, taskRef);
       return NextResponse.json({ status: "failed", progress, error: data.error || "Failed" });
     }
 
@@ -76,4 +77,28 @@ export async function GET(req) {
   } catch (err) {
     return NextResponse.json({ error: err?.message || "Server error" }, { status: 500 });
   }
+}
+
+async function refundTokens(userId, taskRef) {
+  await adminDb.runTransaction(async (tx) => {
+    const taskSnap = await tx.get(taskRef);
+    if (!taskSnap.exists) return;
+    const task = taskSnap.data();
+    if (task.token_refunded) return;
+
+    const cost = typeof task.token_cost === "number" ? task.token_cost : 0;
+    const userRef = adminDb.collection("users").doc(userId);
+    const userSnap = await tx.get(userRef);
+    if (userSnap.exists && cost > 0) {
+      const userData = userSnap.data();
+      const balance = typeof userData.tokenBalance === "number" ? userData.tokenBalance : 0;
+      const used = typeof userData.tokenUsed === "number" ? userData.tokenUsed : 0;
+      tx.update(userRef, {
+        tokenBalance: balance + cost,
+        tokenUsed: Math.max(0, used - cost)
+      });
+    }
+
+    tx.update(taskRef, { token_refunded: true });
+  });
 }

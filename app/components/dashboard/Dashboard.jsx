@@ -50,6 +50,7 @@ export default function Dashboard({ user }) {
   const [maxCharacters, setMaxCharacters] = useState(1000);
   const [error, setError] = useState("");
   const [errorOpen, setErrorOpen] = useState(false);
+  const [maxTextLength, setMaxTextLength] = useState(1000000);
   const pollRef = useRef(null);
   const progressRef = useRef(null);
   const audioRef = useRef(null);
@@ -97,6 +98,28 @@ export default function Dashboard({ user }) {
     }
   }, [error]);
 
+  useEffect(() => {
+    let active = true;
+    const loadConfig = async () => {
+      try {
+        const res = await fetch("/api/config");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!active) return;
+        if (typeof data.maxTextLength === "number") {
+          setMaxTextLength(data.maxTextLength);
+        }
+      } catch {
+        return;
+      }
+    };
+
+    loadConfig();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const parseErrorMessage = (value) => {
     if (!value) return "Unexpected error";
     if (typeof value === "string") {
@@ -137,15 +160,20 @@ export default function Dashboard({ user }) {
       const createdAt = task.createdAt?.toDate ? task.createdAt.toDate() : null;
       const dateLabel = createdAt ? createdAt.toLocaleString() : "Just now";
       const status = task.status || "queued";
+      const textValue = task.text || "";
       return {
         id: task.id,
         title: task.text_preview || "Untitled",
-        meta: `${dateLabel} · ${status}`,
+        meta: dateLabel,
+        createdAt: dateLabel,
         status,
+        progress: typeof task.progress === "number" ? task.progress : null,
         voicerTaskId: task.voicer_task_id || "",
         splitOutput: Boolean(task.settings?.split_output),
         settings: task.settings || {},
-        fullText: task.text || ""
+        fullText: textValue,
+        textLength: typeof task.text_length === "number" ? task.text_length : textValue.length,
+        tokenCost: typeof task.token_cost === "number" ? task.token_cost : null
       };
     });
   }, [tasks]);
@@ -212,6 +240,10 @@ export default function Dashboard({ user }) {
     setDuration(settings.auto_pause_duration ?? 0.5);
     setFrequency(settings.auto_pause_frequency ?? 1);
   };
+
+  const tokenBalance = typeof profile?.tokenBalance === "number" ? profile.tokenBalance : null;
+  const tokenCost = textInput.length;
+  const hasEnoughTokens = tokenBalance === null ? true : tokenCost <= tokenBalance;
 
   const stopProgress = () => {
     if (progressRef.current) {
@@ -296,8 +328,14 @@ export default function Dashboard({ user }) {
       showError("Enter text to generate");
       return;
     }
-    if (textInput.length > 1000000) {
-      showError("Text exceeds 1,000,000 characters");
+    if (textInput.length > maxTextLength) {
+      showError(`Text exceeds ${maxTextLength.toLocaleString()} characters`);
+      return;
+    }
+    if (typeof tokenBalance === "number" && textInput.length > tokenBalance) {
+      showError(
+        `Not enough tokens. Need ${textInput.length.toLocaleString()}, available ${tokenBalance.toLocaleString()}.`
+      );
       return;
     }
 
@@ -491,6 +529,12 @@ export default function Dashboard({ user }) {
   const isPlayingCurrent = isPlaying && currentAudioId === (activeTask?.voicer_task_id || "");
   const canSeek = canPlay && audioMeta.duration > 0 && !isFetchingAudio;
   const canGenerate = profile?.canGenerate !== false;
+  const generateDisabled = !canGenerate || !hasEnoughTokens;
+  const generateHint = !canGenerate
+    ? "Generation access disabled by admin."
+    : !hasEnoughTokens
+      ? `Not enough tokens. Need ${tokenCost.toLocaleString()}, available ${tokenBalance.toLocaleString()}.`
+      : "";
 
   return (
     <div id="main-dashboard" className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 pb-10 pt-6">
@@ -503,6 +547,8 @@ export default function Dashboard({ user }) {
             onChange={setTextInput}
             onExample={() => setTextInput(exampleText)}
             onClear={() => setTextInput("")}
+            maxLength={maxTextLength}
+            tokenBalance={tokenBalance}
           />
           <GenerationResultCard
             onGenerate={handleGenerate}
@@ -510,8 +556,8 @@ export default function Dashboard({ user }) {
             showResult={showResult}
             progress={progress}
             statusText={statusText}
-            generateDisabled={!canGenerate}
-            generateHint={!canGenerate ? "Generation access disabled by admin." : ""}
+            generateDisabled={generateDisabled}
+            generateHint={generateHint}
             canDownload={canDownload}
             canPlay={canPlay}
             onDownload={() =>

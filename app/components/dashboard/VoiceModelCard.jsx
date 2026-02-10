@@ -1,5 +1,5 @@
+import { useEffect, useRef, useState } from "react";
 import Icon from "../Icon";
-import WaveformBars from "./WaveformBars";
 import { models } from "../../data/models";
 
 export default function VoiceModelCard({
@@ -11,6 +11,57 @@ export default function VoiceModelCard({
   selectedModel,
   onModelChange
 }) {
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [modelOpen, setModelOpen] = useState(false);
+  const voiceRef = useRef(null);
+  const modelRef = useRef(null);
+
+  useEffect(() => {
+    if (!voiceOpen) return;
+    const onClick = (event) => {
+      if (!voiceRef.current) return;
+      if (!voiceRef.current.contains(event.target)) {
+        setVoiceOpen(false);
+      }
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") setVoiceOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [voiceOpen]);
+
+  useEffect(() => {
+    if (!modelOpen) return;
+    const onClick = (event) => {
+      if (!modelRef.current) return;
+      if (!modelRef.current.contains(event.target)) {
+        setModelOpen(false);
+      }
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") setModelOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [modelOpen]);
+
+  const selectedPreset = voices.find((voice) => voice.id === selectedVoice);
+  const showCustom = customVoiceId && !selectedPreset;
+  const voiceLabel = showCustom
+    ? `Custom: ${customVoiceId}`
+    : selectedPreset
+      ? `${selectedPreset.name} · ${selectedPreset.meta}`
+      : "Select voice";
+
   return (
     <div id="voice-model-card" className="glass-card rounded-2xl p-5 sm:p-6 mb-6">
       <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
@@ -18,60 +69,96 @@ export default function VoiceModelCard({
         Voice &amp; Model
       </h2>
 
-      <div className="space-y-3 mb-4">
-        {voices.map((voice) => {
-          const isSelected = voice.id === selectedVoice;
-          return (
-            <button
-              key={voice.id}
-              type="button"
-              className={`glass-card rounded-xl p-4 w-full text-left cursor-pointer hover:bg-white/10 transition ${
-                isSelected ? "border-2 border-blue-500" : ""
-              }`}
-              onClick={() => onSelect(voice.id)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <WaveformBars className={voice.color} delays={voice.delays} />
-                  <div>
-                    <div className="text-white font-medium">{voice.name}</div>
-                    <div className="text-xs text-gray-400">{voice.meta}</div>
-                  </div>
-                </div>
-                {isSelected ? <Icon name="circle-check" className="text-blue-500" /> : null}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="pt-4 border-t border-white/10">
-        <label className="text-sm text-gray-300 mb-2 block">Model</label>
-        <div className="glass-card rounded-lg p-3 flex items-center justify-between hover:bg-white/10 transition">
-          <select
-            value={selectedModel}
-            onChange={(event) => onModelChange(event.target.value)}
-            className="w-full bg-transparent text-white focus:outline-none"
+      <div className="space-y-4">
+        <div ref={voiceRef} className="relative">
+          <label className="text-sm text-gray-300 mb-2 block">Voice</label>
+          <button
+            type="button"
+            className="glass-card w-full rounded-lg px-4 py-3 flex items-center justify-between text-white hover:bg-white/10 transition"
+            onClick={() => {
+              setModelOpen(false);
+              setVoiceOpen((value) => !value);
+            }}
           >
-            {models.map((model) => (
-              <option key={model} value={model} className="text-gray-900">
-                {model}
-              </option>
-            ))}
-          </select>
-          <Icon name="chevron-down" className="text-gray-400 ml-2" />
-        </div>
-      </div>
+            <span className="truncate">{voiceLabel}</span>
+            <Icon name="chevron-down" className={`text-gray-400 ml-2 transition-transform ${voiceOpen ? "rotate-180" : ""}`} />
+          </button>
 
-      <div className="pt-4 border-t border-white/10 mt-4">
-        <label className="text-sm text-gray-300 mb-2 block">Custom Voice ID</label>
-        <input
-          type="text"
-          value={customVoiceId}
-          onChange={(event) => onCustomChange(event.target.value)}
-          placeholder="voice_1234"
-          className="w-full bg-gray-900/50 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500/50"
-        />
+          {voiceOpen ? (
+            <div className="absolute left-0 right-0 mt-3 rounded-xl bg-slate-900 border border-slate-700 shadow-xl z-50">
+              <div className="p-3 border-b border-slate-800">
+                <label className="text-xs text-gray-400 mb-2 block">Custom Voice ID</label>
+                <input
+                  type="text"
+                  value={customVoiceId}
+                  onChange={(event) => onCustomChange(event.target.value)}
+                  placeholder="voice_1234"
+                  className="w-full bg-gray-900/50 border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
+                />
+              </div>
+              <div className="p-2 max-h-56 overflow-y-auto">
+                {voices.map((voice) => {
+                  const isActive = voice.id === selectedVoice;
+                  return (
+                    <button
+                      key={voice.id}
+                      type="button"
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                        isActive ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-white/10"
+                      }`}
+                      onClick={() => {
+                        onSelect(voice.id);
+                        setVoiceOpen(false);
+                      }}
+                    >
+                      {voice.name} · {voice.meta}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div ref={modelRef} className="relative">
+          <label className="text-sm text-gray-300 mb-2 block">Model</label>
+          <button
+            type="button"
+            className="glass-card w-full rounded-lg px-4 py-3 flex items-center justify-between text-white hover:bg-white/10 transition"
+            onClick={() => {
+              setVoiceOpen(false);
+              setModelOpen((value) => !value);
+            }}
+          >
+            <span className="truncate">{selectedModel}</span>
+            <Icon name="chevron-down" className={`text-gray-400 ml-2 transition-transform ${modelOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {modelOpen ? (
+            <div className="absolute left-0 right-0 mt-3 rounded-xl bg-slate-900 border border-slate-700 shadow-xl z-50">
+              <div className="p-2 max-h-56 overflow-y-auto">
+                {models.map((model) => {
+                  const isActive = model === selectedModel;
+                  return (
+                    <button
+                      key={model}
+                      type="button"
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                        isActive ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-white/10"
+                      }`}
+                      onClick={() => {
+                        onModelChange(model);
+                        setModelOpen(false);
+                      }}
+                    >
+                      {model}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

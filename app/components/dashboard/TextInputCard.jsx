@@ -1,6 +1,13 @@
 import Icon from "../Icon";
 
-export default function TextInputCard({ value, onChange, onExample, onClear }) {
+export default function TextInputCard({
+  value,
+  onChange,
+  onExample,
+  onClear,
+  maxLength = 1000000,
+  tokenBalance
+}) {
   return (
     <div id="text-input-card" className="glass-card rounded-2xl p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
@@ -30,21 +37,28 @@ export default function TextInputCard({ value, onChange, onExample, onClear }) {
       <textarea
         id="text-input"
         className="w-full h-40 sm:h-56 lg:h-64 bg-gray-900/50 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 resize-none"
-        placeholder="Enter your text here... (up to 1,000,000 characters)"
+        placeholder={`Enter your text here... (up to ${maxLength.toLocaleString()} characters)`}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        maxLength={1000000}
+        maxLength={maxLength}
       />
       <div className="flex items-center justify-between mt-4">
         <div className="text-gray-400 text-sm">
           <Icon name="circle-info" className="mr-2" />
           Supports multiple languages and formats
         </div>
-        <div className="glass-card px-4 py-2 rounded-lg">
-          <span className="text-blue-400 font-mono text-lg font-bold">
-            {value.length.toLocaleString()}
-          </span>
-          <span className="text-gray-400 text-sm ml-2">/ 1,000,000</span>
+        <div className="flex items-center gap-4">
+          {typeof tokenBalance === "number" ? (
+            <div className="glass-card px-3 py-2 rounded-lg text-xs text-gray-300">
+              Tokens: <span className="text-white font-semibold">{tokenBalance.toLocaleString()}</span>
+            </div>
+          ) : null}
+          <div className="glass-card px-4 py-2 rounded-lg">
+            <span className="text-blue-400 font-mono text-lg font-bold">
+              {value.length.toLocaleString()}
+            </span>
+            <span className="text-gray-400 text-sm ml-2">/ {maxLength.toLocaleString()}</span>
+          </div>
         </div>
       </div>
     </div>

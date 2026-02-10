@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Icon from "../Icon";
 
 const splitTypes = ["Smart", "Sentences", "Paragraphs", "Lines"];
@@ -10,14 +11,24 @@ export default function SplitZipCard({
   maxCharacters,
   onMaxCharactersChange
 }) {
+  const [open, setOpen] = useState(false);
+
   return (
     <div id="split-zip-card" className="glass-card rounded-2xl p-5 sm:p-6 mb-6">
-      <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
-        <Icon name="scissors" className="mr-2 text-purple-400" />
-        Split &amp; ZIP
-      </h2>
+      <button
+        type="button"
+        className="w-full flex items-center justify-between text-lg font-semibold text-white"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+      >
+        <span className="flex items-center">
+          <Icon name="scissors" className="mr-2 text-purple-400" />
+          Split &amp; ZIP
+        </span>
+        <Icon name="chevron-down" className={`transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
 
-      <div className="space-y-4">
+      <div className={`space-y-4 mt-4 ${open ? "" : "hidden"}`}>
         <div className="flex items-center justify-between">
           <span className="text-gray-300 text-sm">Enable ZIP</span>
           <label className="relative inline-flex items-center cursor-pointer">
