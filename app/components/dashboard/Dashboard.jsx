@@ -12,6 +12,9 @@ import ErrorModal from "./ErrorModal";
 import { voices } from "../../data/voices";
 import { models } from "../../data/models";
 import { useTasks } from "../../hooks/useTasks";
+import { useUserProfile } from "../../hooks/useUserProfile";
+import { signOut } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 
 const statuses = ["In Queue...", "Synthesizing...", "Processing...", "Finalizing..."];
 const exampleText = "Nature has always been a source of inspiration and wonder.";
@@ -27,6 +30,7 @@ const statusMap = {
 
 export default function Dashboard({ user }) {
   const { tasks } = useTasks(user);
+  const { profile, missing } = useUserProfile(user);
   const [textInput, setTextInput] = useState("");
   const [autoPauseEnabled, setAutoPauseEnabled] = useState(false);
   const [duration, setDuration] = useState(0.5);
@@ -80,6 +84,12 @@ export default function Dashboard({ user }) {
       setIsPlaying(false);
     };
   }, []);
+
+  useEffect(() => {
+    if (!missing) return;
+    showError("Account record not found. Please contact admin.");
+    signOut(auth);
+  }, [missing]);
 
   useEffect(() => {
     if (error) {
@@ -276,6 +286,11 @@ export default function Dashboard({ user }) {
 
   const handleGenerate = async () => {
     setError("");
+
+    if (profile?.canGenerate === false) {
+      showError("Generation access denied by admin.");
+      return;
+    }
 
     if (!textInput.trim()) {
       showError("Enter text to generate");
@@ -475,6 +490,7 @@ export default function Dashboard({ user }) {
   const canPlay = canDownload && !isZipTask;
   const isPlayingCurrent = isPlaying && currentAudioId === (activeTask?.voicer_task_id || "");
   const canSeek = canPlay && audioMeta.duration > 0 && !isFetchingAudio;
+  const canGenerate = profile?.canGenerate !== false;
 
   return (
     <div id="main-dashboard" className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 pb-10 pt-6">
@@ -494,6 +510,8 @@ export default function Dashboard({ user }) {
             showResult={showResult}
             progress={progress}
             statusText={statusText}
+            generateDisabled={!canGenerate}
+            generateHint={!canGenerate ? "Generation access disabled by admin." : ""}
             canDownload={canDownload}
             canPlay={canPlay}
             onDownload={() =>

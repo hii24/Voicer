@@ -7,6 +7,8 @@ export default function GenerationResultCard({
   showResult,
   progress,
   statusText,
+  generateDisabled,
+  generateHint,
   canDownload,
   onDownload,
   onPlay,
@@ -34,11 +36,14 @@ export default function GenerationResultCard({
         type="button"
         className="w-full py-5 sm:py-6 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg sm:text-xl font-bold btn-glow transition mb-6 disabled:opacity-70 disabled:cursor-not-allowed"
         onClick={onGenerate}
-        disabled={isProcessing}
+        disabled={isProcessing || generateDisabled}
       >
         <Icon name="play" className="mr-3" />
         Create Voiceover
       </button>
+      {generateDisabled && generateHint ? (
+        <div className="mb-4 text-sm text-red-300">{generateHint}</div>
+      ) : null}
 
       <div id="processing-area" className={isProcessing ? "" : "hidden"}>
         <div className="flex items-center justify-center space-x-4 mb-4">

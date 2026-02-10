@@ -6,14 +6,21 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { auth, db } from "../lib/firebase";
 import { useUser } from "../hooks/useUser";
+import { mapAuthError } from "../lib/authErrors";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [user, loading] = useUser();
+  const [user, loading, authError] = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (authError) {
+      setError(mapAuthError(authError, "register"));
+    }
+  }, [authError]);
 
   useEffect(() => {
     if (user) {
@@ -32,11 +39,11 @@ export default function RegisterPage() {
         email: result.user.email,
         createdAt: serverTimestamp(),
         role: "user",
-        canGenerate: true
+        canGenerate: false
       });
       router.replace("/dashboard");
     } catch (err) {
-      setError(err?.message || "Registration failed");
+      setError(mapAuthError(err, "register"));
     } finally {
       setSubmitting(false);
     }
@@ -72,6 +79,7 @@ export default function RegisterPage() {
             />
           </div>
           {error ? <div className="text-sm text-red-300">{error}</div> : null}
+          {authError ? <div className="text-sm text-red-300">{authError.message}</div> : null}
           <button
             type="submit"
             className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold"

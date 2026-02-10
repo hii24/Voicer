@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 import Icon from "../Icon";
 
 export default function Header() {
+  const router = useRouter();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const helpRef = useRef(null);
@@ -51,6 +53,26 @@ export default function Header() {
     };
   }, [isSettingsOpen]);
 
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setIsSettingsOpen(false);
+      router.replace("/login");
+    } catch {
+      setIsSettingsOpen(false);
+    }
+  };
+
+  const openSettings = () => {
+    setIsHelpOpen(false);
+    setIsSettingsOpen((prev) => !prev);
+  };
+
+  const openHelp = () => {
+    setIsSettingsOpen(false);
+    setIsHelpOpen((prev) => !prev);
+  };
+
   return (
     <header id="header" className="mb-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -64,38 +86,38 @@ export default function Header() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 relative">
-          <div className="relative" ref={settingsRef}>
+          <div className="relative w-full lg:w-auto" ref={settingsRef}>
             <button
               type="button"
-              className="glass-card px-4 py-2 rounded-lg text-white hover:bg-white/10 transition"
-              onClick={() => setIsSettingsOpen((prev) => !prev)}
+              className="glass-card w-full lg:w-auto px-4 py-2 rounded-lg text-white hover:bg-white/10 transition"
+              onClick={openSettings}
             >
               <Icon name="gear" className="mr-2" />
               Settings
             </button>
             {isSettingsOpen ? (
-              <div className="absolute left-0 sm:left-auto sm:right-0 mt-3 w-48 sm:w-56 rounded-xl p-2 text-sm text-gray-200 shadow-xl z-50 bg-slate-900 border border-slate-700">
+              <div className="absolute left-0 right-0 lg:left-auto lg:right-0 mt-3 w-full lg:w-56 rounded-xl p-2 text-sm text-gray-200 shadow-xl z-50 bg-slate-900 border border-slate-700">
                 <button
                   type="button"
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition text-red-300"
-                  onClick={() => signOut(auth)}
+                  onClick={handleSignOut}
                 >
                   Sign out
                 </button>
               </div>
             ) : null}
           </div>
-          <div className="relative" ref={helpRef}>
+          <div className="relative w-full lg:w-auto" ref={helpRef}>
             <button
               type="button"
-              className="glass-card px-4 py-2 rounded-lg text-white hover:bg-white/10 transition"
-              onClick={() => setIsHelpOpen((prev) => !prev)}
+              className="glass-card w-full lg:w-auto px-4 py-2 rounded-lg text-white hover:bg-white/10 transition"
+              onClick={openHelp}
             >
               <Icon name="circle-question" className="mr-2" />
               Help
             </button>
             {isHelpOpen ? (
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-xl p-4 text-xs text-gray-200 shadow-xl z-50 bg-slate-900 border border-slate-700">
+              <div className="absolute left-0 right-0 lg:left-auto lg:right-0 mt-3 w-full lg:w-96 rounded-xl p-4 text-xs text-gray-200 shadow-xl z-50 bg-slate-900 border border-slate-700">
                 <div className="text-white font-semibold mb-2">What You Can Configure</div>
                 <div className="space-y-3">
                   <div>
@@ -121,13 +143,6 @@ export default function Header() {
               </div>
             ) : null}
           </div>
-          <button
-            type="button"
-            className="glass-card px-4 py-2 rounded-lg text-red-300 hover:bg-white/10 transition sm:hidden"
-            onClick={() => signOut(auth)}
-          >
-            Sign out
-          </button>
         </div>
       </div>
     </header>

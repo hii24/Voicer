@@ -29,7 +29,10 @@ export async function POST(req) {
     const userId = decoded.uid;
 
     const userSnap = await adminDb.collection("users").doc(userId).get();
-    const userData = userSnap.exists ? userSnap.data() : {};
+    if (!userSnap.exists) {
+      return NextResponse.json({ error: "Account record not found" }, { status: 403 });
+    }
+    const userData = userSnap.data();
     if (userData.canGenerate === false) {
       return NextResponse.json({ error: "Generation access denied" }, { status: 403 });
     }

@@ -1,24 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "../lib/firebase";
 import { useUser } from "../hooks/useUser";
+import { useUserProfile } from "../hooks/useUserProfile";
+import { mapAuthError } from "../lib/authErrors";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [user, loading] = useUser();
+  const [user, loading, authError] = useUser();
+  const { loading: profileLoading, missing } = useUserProfile(user);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      router.replace("/dashboard");
+    if (authError) {
+      setError(mapAuthError(authError, "login"));
     }
-  }, [user, router]);
+  }, [authError]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (profileLoading) return;
+    if (missing) {
+      setError("Account record not found. Contact admin.");
+      signOut(auth);
+      return;
+    }
+    router.replace("/dashboard");
+  }, [user, profileLoading, missing, router]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -29,13 +43,13 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.replace("/dashboard");
     } catch (err) {
-      setError(err?.message || "Authentication failed");
+      setError(mapAuthError(err, "login"));
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (loading || (user && profileLoading)) {
     return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
   }
 
@@ -65,6 +79,7 @@ export default function LoginPage() {
             />
           </div>
           {error ? <div className="text-sm text-red-300">{error}</div> : null}
+          {authError ? <div className="text-sm text-red-300">{authError.message}</div> : null}
           <button
             type="submit"
             className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold"
