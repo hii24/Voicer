@@ -81,8 +81,7 @@ export default function Header() {
             <Icon name="microphone-lines" className="text-white text-xl" />
           </div>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-white">Voicer API</h1>
-            <p className="text-blue-300 text-sm">Professional Audio Workstation</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-white">Professional Audio Workstation</h1>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 relative">
@@ -123,7 +122,7 @@ export default function Header() {
                   <div>
                     <div className="text-white font-medium mb-1">Voice &amp; Model</div>
                     <div>Pick a preset voice (voice_id) or enter a Custom Voice ID.</div>
-                    <div>Choose a model_id (quality vs speed). Default is eleven_multilingual_v2.</div>
+                    <div>Choose a model_id (quality vs speed). Default is Eleven Multilingual v2.</div>
                   </div>
                   <div>
                     <div className="text-white font-medium mb-1">Split &amp; ZIP</div>
@@ -133,8 +132,8 @@ export default function Header() {
                     <div>Enable ZIP: when on, output is a ZIP of MP3 chunks. ZIP can only be downloaded.</div>
                   </div>
                   <div>
-                    <div className="text-white font-medium mb-1">Auto Pauses</div>
-                    <div>Enable pauses between chunks for more natural timing.</div>
+                    <div className="text-white font-medium mb-1">Manual Pauses</div>
+                    <div>Enable pauses between chunks to control pacing manually.</div>
                     <div>Duration: 0.1–30 seconds.</div>
                     <div>Frequency: every Nth chunk gets a pause (1–100). Last chunk never pauses.</div>
                   </div>

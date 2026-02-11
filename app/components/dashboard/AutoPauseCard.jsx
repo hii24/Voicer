@@ -29,14 +29,14 @@ export default function AutoPauseCard({
       >
         <span className="flex items-center">
           <Icon name="circle-pause" className="mr-2 text-green-400" />
-          Auto Pauses
+          Manual Pauses
         </span>
         <Icon name="chevron-down" className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       <div id="auto-pause-content" className={`space-y-4 mt-4 ${isOpen ? "" : "hidden"}`}>
         <div className="flex items-center justify-between">
-          <span className="text-gray-300 text-sm">Enable Auto Pauses</span>
+          <span className="text-gray-300 text-sm">Enable Manual Pauses</span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"

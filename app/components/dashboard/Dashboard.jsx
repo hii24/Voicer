@@ -44,7 +44,7 @@ export default function Dashboard({ user }) {
   const [statusText, setStatusText] = useState(statuses[0]);
   const [selectedVoice, setSelectedVoice] = useState(voices[0]?.id || "");
   const [customVoiceId, setCustomVoiceId] = useState("");
-  const [selectedModel, setSelectedModel] = useState(models[0]);
+  const [selectedModel, setSelectedModel] = useState(models[0]?.id || "");
   const [zipEnabled, setZipEnabled] = useState(false);
   const [splitType, setSplitType] = useState("Smart");
   const [maxCharacters, setMaxCharacters] = useState(1000);

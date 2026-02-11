@@ -17,9 +17,9 @@ function formatTooltip(item) {
     `Split Type: ${settings.split_type || "-"}`,
     `Max Chunk Length: ${settings.max_chunk_length || "-"}`,
     `Split Output (ZIP): ${settings.split_output ? "true" : "false"}`,
-    `Auto Pause Enabled: ${settings.auto_pause_enabled ? "true" : "false"}`,
-    `Auto Pause Duration: ${settings.auto_pause_duration ?? "-"}`,
-    `Auto Pause Frequency: ${settings.auto_pause_frequency ?? "-"}`
+    `Manual Pause Enabled: ${settings.auto_pause_enabled ? "true" : "false"}`,
+    `Manual Pause Duration: ${settings.auto_pause_duration ?? "-"}`,
+    `Manual Pause Frequency: ${settings.auto_pause_frequency ?? "-"}`
   ];
 
   const textValue = item.fullText || "";

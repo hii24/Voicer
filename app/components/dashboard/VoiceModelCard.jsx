@@ -61,6 +61,7 @@ export default function VoiceModelCard({
     : selectedPreset
       ? `${selectedPreset.name} · ${selectedPreset.meta}`
       : "Select voice";
+  const selectedModelLabel = models.find((model) => model.id === selectedModel)?.label || selectedModel;
 
   return (
     <div id="voice-model-card" className="glass-card rounded-2xl p-5 sm:p-6 mb-6">
@@ -130,7 +131,7 @@ export default function VoiceModelCard({
               setModelOpen((value) => !value);
             }}
           >
-            <span className="truncate">{selectedModel}</span>
+            <span className="truncate">{selectedModelLabel}</span>
             <Icon name="chevron-down" className={`text-gray-400 ml-2 transition-transform ${modelOpen ? "rotate-180" : ""}`} />
           </button>
 
@@ -138,20 +139,20 @@ export default function VoiceModelCard({
             <div className="absolute left-0 right-0 mt-3 rounded-xl bg-slate-900 border border-slate-700 shadow-xl z-50">
               <div className="p-2 max-h-56 overflow-y-auto">
                 {models.map((model) => {
-                  const isActive = model === selectedModel;
+                  const isActive = model.id === selectedModel;
                   return (
                     <button
-                      key={model}
+                      key={model.id}
                       type="button"
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                         isActive ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-white/10"
                       }`}
                       onClick={() => {
-                        onModelChange(model);
+                        onModelChange(model.id);
                         setModelOpen(false);
                       }}
                     >
-                      {model}
+                      {model.label}
                     </button>
                   );
                 })}
