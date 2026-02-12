@@ -6,11 +6,12 @@ export default function TextInputCard({
   onExample,
   onClear,
   maxLength = 1000000,
-  tokenBalance
+  tokenBalance,
+  className = ""
 }) {
   return (
-    <div id="text-input-card" className="glass-card rounded-2xl p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
+    <div id="text-input-card" className={`glass-card rounded-2xl p-6 flex flex-col ${className}`}>
+      <div className="flex items-center justify-between mb-4 shrink-0">
         <h2 className="text-xl font-semibold text-white flex items-center">
           <Icon name="pen-to-square" className="mr-3 text-blue-400" />
           Text Input
@@ -36,13 +37,13 @@ export default function TextInputCard({
       </div>
       <textarea
         id="text-input"
-        className="w-full h-40 sm:h-56 lg:h-64 bg-gray-900/50 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 resize-none"
+        className="w-full flex-1 min-h-[180px] sm:min-h-[210px] lg:min-h-[250px] bg-gray-900/50 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 resize-none"
         placeholder={`Enter your text here... (up to ${maxLength.toLocaleString()} characters)`}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         maxLength={maxLength}
       />
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center justify-between mt-4 shrink-0">
         <div className="text-gray-400 text-sm">
           <Icon name="circle-info" className="mr-2" />
           Supports multiple languages and formats

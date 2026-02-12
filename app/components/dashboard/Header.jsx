@@ -81,7 +81,7 @@ export default function Header() {
             <Icon name="microphone-lines" className="text-white text-xl" />
           </div>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-white">Professional Audio Workstation</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold text-white">Audio Workstation</h1>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 relative">
@@ -128,12 +128,12 @@ export default function Header() {
                     <div className="text-white font-medium mb-1">Split &amp; ZIP</div>
                     <div>Split Type:</div>
                     <div>Smart (auto), Sentences, Paragraphs, Lines (max_length).</div>
-                    <div>Max Chunk Length: 100–1000 characters (used by Smart and max_length).</div>
+                    <div>Max Chunk Length: 100–1600 characters (used by Smart and max_length).</div>
                     <div>Enable ZIP: when on, output is a ZIP of MP3 chunks. ZIP can only be downloaded.</div>
                   </div>
                   <div>
-                    <div className="text-white font-medium mb-1">Manual Pauses</div>
-                    <div>Enable pauses between chunks to control pacing manually.</div>
+                    <div className="text-white font-medium mb-1">Pauses</div>
+                    <div>Enable pauses between chunks to control pacing.</div>
                     <div>Duration: 0.1–30 seconds.</div>
                     <div>Frequency: every Nth chunk gets a pause (1–100). Last chunk never pauses.</div>
                   </div>

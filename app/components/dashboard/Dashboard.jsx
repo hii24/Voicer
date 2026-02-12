@@ -7,6 +7,7 @@ import GenerationResultCard from "./GenerationResultCard";
 import VoiceModelCard from "./VoiceModelCard";
 import SplitZipCard from "./SplitZipCard";
 import AutoPauseCard from "./AutoPauseCard";
+import PresetsCard from "./PresetsCard";
 import HistorySection from "./HistorySection";
 import ErrorModal from "./ErrorModal";
 import { voices } from "../../data/voices";
@@ -42,6 +43,7 @@ export default function Dashboard({ user }) {
   const [currentAudioId, setCurrentAudioId] = useState("");
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState(statuses[0]);
+  const [selectedPresetKey, setSelectedPresetKey] = useState("");
   const [selectedVoice, setSelectedVoice] = useState(voices[0]?.id || "");
   const [customVoiceId, setCustomVoiceId] = useState("");
   const [selectedModel, setSelectedModel] = useState(models[0]?.id || "");
@@ -202,10 +204,14 @@ export default function Dashboard({ user }) {
     }
   };
 
-  const handlePreset = (nextDuration, nextFrequency) => {
+  const handlePresetApply = (preset) => {
+    if (!preset) return;
+    setSelectedPresetKey(preset.key);
+    setSplitType(preset.splitType);
+    setMaxCharacters(preset.maxCharacters);
     setAutoPauseEnabled(true);
-    setDuration(nextDuration);
-    setFrequency(nextFrequency);
+    setDuration(preset.duration);
+    setFrequency(preset.frequency);
   };
 
   const applyTaskSettings = (item) => {
@@ -366,7 +372,7 @@ export default function Dashboard({ user }) {
           voice_id: selectedVoice,
           model_id: selectedModel,
           split_type: splitTypeMap[splitType] || "smart",
-          max_chunk_length: Math.min(Math.max(maxCharacters, 100), 1000),
+          max_chunk_length: Math.min(Math.max(maxCharacters, 100), 1600),
           split_output: zipEnabled,
           auto_pause_enabled: autoPauseEnabled,
           auto_pause_duration: autoPauseEnabled ? duration : undefined,
@@ -540,55 +546,18 @@ export default function Dashboard({ user }) {
     <div id="main-dashboard" className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 pb-10 pt-6">
       <Header />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div id="workspace-area" className="lg:col-span-8">
-          <TextInputCard
-            value={textInput}
-            onChange={setTextInput}
-            onExample={() => setTextInput(exampleText)}
-            onClear={() => setTextInput("")}
-            maxLength={maxTextLength}
-            tokenBalance={tokenBalance}
-          />
-          <GenerationResultCard
-            onGenerate={handleGenerate}
-            isProcessing={isProcessing}
-            showResult={showResult}
-            progress={progress}
-            statusText={statusText}
-            generateDisabled={generateDisabled}
-            generateHint={generateHint}
-            canDownload={canDownload}
-            canPlay={canPlay}
-            onDownload={() =>
-              activeTask &&
-              handleDownload({
-                id: activeTask.id,
-                voicerTaskId: activeTask.voicer_task_id || "",
-                status: activeTask.status || ""
-              })
-            }
-            onPlay={() =>
-              activeTask &&
-              handlePlay({
-                id: activeTask.id,
-                voicerTaskId: activeTask.voicer_task_id || "",
-                status: activeTask.status || ""
-              })
-            }
-            isFetchingAudio={isFetchingAudio}
-            isPlaying={isPlayingCurrent}
-            audioProgress={audioMeta.duration ? audioMeta.current / audioMeta.duration : 0}
-            canSeek={canSeek}
-            onSeek={handleSeek}
-            timeCurrent={formatTime(audioMeta.current)}
-            timeTotal={formatTime(audioMeta.duration)}
-            sizeLabel={audioMeta.size ? `${(audioMeta.size / (1024 * 1024)).toFixed(1)} MB` : "--"}
-            bitrateLabel={audioMeta.bitrate ? `${audioMeta.bitrate} kbps` : "--"}
-          />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6">
+        <TextInputCard
+          className="mb-6 lg:mb-0 h-full"
+          value={textInput}
+          onChange={setTextInput}
+          onExample={() => setTextInput(exampleText)}
+          onClear={() => setTextInput("")}
+          maxLength={maxTextLength}
+          tokenBalance={tokenBalance}
+        />
 
-        <div id="config-panel" className="lg:col-span-4">
+        <div id="config-panel" className="h-full flex flex-col gap-4 lg:gap-4 lg:justify-between">
           <VoiceModelCard
             voices={voices}
             selectedVoice={selectedVoice}
@@ -613,9 +582,47 @@ export default function Dashboard({ user }) {
             onDurationChange={setDuration}
             frequency={frequency}
             onFrequencyChange={setFrequency}
-            onPreset={handlePreset}
           />
         </div>
+
+        <GenerationResultCard
+          onGenerate={handleGenerate}
+          isProcessing={isProcessing}
+          showResult={showResult}
+          progress={progress}
+          statusText={statusText}
+          generateDisabled={generateDisabled}
+          generateHint={generateHint}
+          canDownload={canDownload}
+          canPlay={canPlay}
+          onDownload={() =>
+            activeTask &&
+            handleDownload({
+              id: activeTask.id,
+              voicerTaskId: activeTask.voicer_task_id || "",
+              status: activeTask.status || ""
+            })
+          }
+          onPlay={() =>
+            activeTask &&
+            handlePlay({
+              id: activeTask.id,
+              voicerTaskId: activeTask.voicer_task_id || "",
+              status: activeTask.status || ""
+            })
+          }
+          isFetchingAudio={isFetchingAudio}
+          isPlaying={isPlayingCurrent}
+          audioProgress={audioMeta.duration ? audioMeta.current / audioMeta.duration : 0}
+          canSeek={canSeek}
+          onSeek={handleSeek}
+          timeCurrent={formatTime(audioMeta.current)}
+          timeTotal={formatTime(audioMeta.duration)}
+          sizeLabel={audioMeta.size ? `${(audioMeta.size / (1024 * 1024)).toFixed(1)} MB` : "--"}
+          bitrateLabel={audioMeta.bitrate ? `${audioMeta.bitrate} kbps` : "--"}
+        />
+
+        <PresetsCard onApply={handlePresetApply} selectedKey={selectedPresetKey} />
       </div>
 
       <HistorySection

@@ -11,10 +11,10 @@ export default function SplitZipCard({
   maxCharacters,
   onMaxCharactersChange
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   return (
-    <div id="split-zip-card" className="glass-card rounded-2xl p-5 sm:p-6 mb-6">
+    <div id="split-zip-card" className="glass-card rounded-2xl p-5 sm:p-6">
       <button
         type="button"
         className="w-full flex items-center justify-between text-lg font-semibold text-white"
@@ -72,7 +72,7 @@ export default function SplitZipCard({
             value={maxCharacters}
             onChange={(event) => onMaxCharactersChange(Number(event.target.value))}
             min={100}
-            max={1000}
+            max={1600}
             className="w-full bg-gray-900/50 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500/50"
           />
         </div>

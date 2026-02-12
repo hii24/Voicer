@@ -64,7 +64,7 @@ export default function VoiceModelCard({
   const selectedModelLabel = models.find((model) => model.id === selectedModel)?.label || selectedModel;
 
   return (
-    <div id="voice-model-card" className="glass-card rounded-2xl p-5 sm:p-6 mb-6">
+    <div id="voice-model-card" className="glass-card rounded-2xl p-5 sm:p-6">
       <h2 className="text-lg font-semibold text-white mb-4 flex items-center">
         <Icon name="microphone" className="mr-2 text-blue-400" />
         Voice &amp; Model

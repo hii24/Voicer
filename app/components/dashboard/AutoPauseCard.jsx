@@ -7,8 +7,7 @@ export default function AutoPauseCard({
   duration,
   onDurationChange,
   frequency,
-  onFrequencyChange,
-  onPreset
+  onFrequencyChange
 }) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -20,7 +19,7 @@ export default function AutoPauseCard({
   };
 
   return (
-    <div id="auto-pause-card" className="glass-card rounded-2xl p-5 sm:p-6">
+    <div id="auto-pause-card" className="glass-card rounded-2xl px-5 py-4 sm:px-6 sm:py-4">
       <button
         type="button"
         className="w-full flex items-center justify-between text-lg font-semibold text-white"
@@ -29,14 +28,14 @@ export default function AutoPauseCard({
       >
         <span className="flex items-center">
           <Icon name="circle-pause" className="mr-2 text-green-400" />
-          Manual Pauses
+          Pauses
         </span>
         <Icon name="chevron-down" className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       <div id="auto-pause-content" className={`space-y-4 mt-4 ${isOpen ? "" : "hidden"}`}>
         <div className="flex items-center justify-between">
-          <span className="text-gray-300 text-sm">Enable Manual Pauses</span>
+          <span className="text-gray-300 text-sm">Enable Pauses</span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -80,35 +79,6 @@ export default function AutoPauseCard({
             />
           </div>
 
-          <div className="pt-4 border-t border-white/10">
-            <label className="text-sm text-gray-300 mb-3 block">Presets</label>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                className="px-3 py-3 rounded-lg bg-gradient-to-br from-orange-600 to-red-600 text-white text-sm font-medium hover:shadow-lg transition"
-                onClick={() => onPreset?.(1.5, 1)}
-              >
-                <Icon name="book" className="mb-1 block" />
-                Audiobook
-              </button>
-              <button
-                type="button"
-                className="px-3 py-3 rounded-lg bg-gradient-to-br from-green-600 to-teal-600 text-white text-sm font-medium hover:shadow-lg transition"
-                onClick={() => onPreset?.(10, 1)}
-              >
-                <Icon name="spa" className="mb-1 block" />
-                Meditation
-              </button>
-              <button
-                type="button"
-                className="px-3 py-3 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white text-sm font-medium hover:shadow-lg transition"
-                onClick={() => onPreset?.(2.5, 10)}
-              >
-                <Icon name="podcast" className="mb-1 block" />
-                Podcast
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
